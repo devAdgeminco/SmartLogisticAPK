@@ -7,6 +7,9 @@ public class ArticulosAlmacen {
     String almacen;
     Integer cantidad;
 
+    public ArticulosAlmacen() {
+
+    }
     public ArticulosAlmacen(int id, String codigo, String descripcion, String almacen, Integer cantidad) {
         this.id = id;
         this.codigo = codigo;
@@ -22,9 +25,7 @@ public class ArticulosAlmacen {
         this.cantidad = cantidad;
     }
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
 
     public void setId(int id) {
         this.id = id;

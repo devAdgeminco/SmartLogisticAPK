@@ -30,7 +30,7 @@ public class DbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("CREATE TABLE " + TABLE_INVENTARIO_DETALLE + "(" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "idInventario INTEGER," +
-                "codigoProducto INTEGER," +
+                "codigoProducto TEXT NOT NULL," +
                 "descProducto TEXT NOT NULL," +
                 "sustento TEXT NOT NULL," +
                 "cantidadAlmacen INT," +

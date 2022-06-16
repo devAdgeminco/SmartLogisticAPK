@@ -8,7 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import androidx.annotation.Nullable;
 
 import com.adg.inventario.Entitys.ArticulosAlmacen;
-import com.cdp.agenda.entidades.Contactos;
+import com.adg.inventario.Entitys.Inventario;
+import com.adg.inventario.Entitys.InventarioDetalle;
 
 import java.util.ArrayList;
 
@@ -42,57 +43,117 @@ public class DbInventario extends DbHelper {
         return id;
     }
 
-    public ArrayList<ArticulosAlmacen> mostrarInventarioDetalle() {
+    public ArrayList<Inventario> mostrarInventario() {
 
         DbHelper dbHelper = new DbHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        ArrayList<ArticulosAlmacen> listaArticulos = new ArrayList<>();
-        ArticulosAlmacen articulos;
-        Cursor cursorContactos;
+        ArrayList<Inventario> listaInventario = new ArrayList<Inventario>();
+        Inventario inventario;
+        Cursor cursor;
 
-        cursorContactos = db.rawQuery("SELECT * FROM " + TABLE_INVENTARIO + " ORDER BY nombre ASC", null);
+        cursor = db.rawQuery("SELECT * FROM " + TABLE_INVENTARIO, null);
 
-        if (cursorContactos.moveToFirst()) {
+        if (cursor.moveToFirst()) {
             do {
-                articulos = new ArticulosAlmacen();
-                articulos.setId(cursorContactos.getInt(0));
-                articulos.setCodigo(cursorContactos.getString(1));
-                articulos.setDescripcion(cursorContactos.getString(2));
-                articulos.set(cursorContactos.getString(3));
-                listaArticulos.add(articulos);
-            } while (cursorContactos.moveToNext());
+                inventario = new Inventario();
+                inventario.setId(cursor.getInt(0));
+                inventario.setDescripcion(cursor.getString(1));
+                inventario.setFecha(cursor.getString(2));
+                inventario.setAlmacen(cursor.getString(3));
+                listaInventario.add(inventario);
+            } while (cursor.moveToNext());
         }
 
-        cursorContactos.close();
+        cursor.close();
+
+        return listaInventario;
+    }
+
+    public ArrayList<InventarioDetalle> mostrarInventarioDetalle(int id) {
+
+        DbHelper dbHelper = new DbHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ArrayList<InventarioDetalle> listaInventarioDetalle = new ArrayList<InventarioDetalle>();
+        InventarioDetalle inventarioDetalle;
+        Cursor cursor;
+
+        cursor = db.rawQuery("SELECT * FROM " + TABLE_INVENTARIO_DETALLE + " WHERE idInventario=" + id, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                inventarioDetalle = new InventarioDetalle();
+                inventarioDetalle.setId(cursor.getInt(0));
+                inventarioDetalle.setIdInventario(cursor.getInt(1));
+                inventarioDetalle.setCodigoProducto(cursor.getString(2));
+                inventarioDetalle.setDescProducto(cursor.getString(3));
+                inventarioDetalle.setSustento(cursor.getString(4));
+                inventarioDetalle.setCantidadAlmacen(cursor.getInt(5));
+                inventarioDetalle.setCantidadInventario(cursor.getInt(6));
+
+                listaInventarioDetalle.add(inventarioDetalle);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+
+        return listaInventarioDetalle;
+    }
+
+    public ArrayList<ArticulosAlmacen> mostrarArticulos() {
+
+        DbHelper dbHelper = new DbHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ArrayList<ArticulosAlmacen> listaArticulos = new ArrayList<ArticulosAlmacen>();
+        ArticulosAlmacen articulos;
+        Cursor cursor;
+
+        cursor = db.rawQuery("SELECT * FROM " + TABLE_ARTICULOS, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                articulos = new ArticulosAlmacen();
+                articulos.setId(cursor.getInt(0));
+                articulos.setCodigo(cursor.getString(1));
+                articulos.setDescripcion(cursor.getString(2));
+                articulos.setAlmacen(cursor.getString(3));
+                articulos.setCantidad(cursor.getInt(3));
+                listaArticulos.add(articulos);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
 
         return listaArticulos;
     }
 
-    public Contactos verContacto(int id) {
+    public ArticulosAlmacen verArticulo(String cogido) {
 
         DbHelper dbHelper = new DbHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        Contactos contacto = null;
-        Cursor cursorContactos;
+        ArticulosAlmacen articuloAlmacen = null;
+        Cursor cursor;
 
-        cursorContactos = db.rawQuery("SELECT * FROM " + TABLE_CONTACTOS + " WHERE id = " + id + " LIMIT 1", null);
+        cursor = db.rawQuery("SELECT * FROM " + TABLE_ARTICULOS + " WHERE codigo = '" + cogido + "' LIMIT 1", null);
 
-        if (cursorContactos.moveToFirst()) {
-            contacto = new Contactos();
-            contacto.setId(cursorContactos.getInt(0));
-            contacto.setNombre(cursorContactos.getString(1));
-            contacto.setTelefono(cursorContactos.getString(2));
-            contacto.setCorreo_electornico(cursorContactos.getString(3));
+        if (cursor.moveToFirst()) {
+            articuloAlmacen = new ArticulosAlmacen();
+            articuloAlmacen.setId(cursor.getInt(0));
+            articuloAlmacen.setCodigo(cursor.getString(1));
+            articuloAlmacen.setDescripcion(cursor.getString(2));
+            articuloAlmacen.setAlmacen(cursor.getString(3));
+            articuloAlmacen.setCantidad(cursor.getInt(4));
         }
 
-        cursorContactos.close();
+        cursor.close();
 
-        return contacto;
+        return articuloAlmacen;
     }
 
-    public boolean editarContacto(int id, String nombre, String telefono, String correo_electronico) {
+    public boolean editarCantidadInventarioDetalle(int id, int cantidad) {
 
         boolean correcto = false;
 
@@ -100,27 +161,7 @@ public class DbInventario extends DbHelper {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         try {
-            db.execSQL("UPDATE " + TABLE_CONTACTOS + " SET nombre = '" + nombre + "', telefono = '" + telefono + "', correo_electronico = '" + correo_electronico + "' WHERE id='" + id + "' ");
-            correcto = true;
-        } catch (Exception ex) {
-            ex.toString();
-            correcto = false;
-        } finally {
-            db.close();
-        }
-
-        return correcto;
-    }
-
-    public boolean eliminarContacto(int id) {
-
-        boolean correcto = false;
-
-        DbHelper dbHelper = new DbHelper(context);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        try {
-            db.execSQL("DELETE FROM " + TABLE_CONTACTOS + " WHERE id = '" + id + "'");
+            db.execSQL("UPDATE " + TABLE_INVENTARIO_DETALLE + " SET cantidad = " + cantidad + " WHERE id='" + id + "' ");
             correcto = true;
         } catch (Exception ex) {
             ex.toString();
